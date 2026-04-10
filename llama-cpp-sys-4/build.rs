@@ -1142,6 +1142,7 @@ fn main() {
     config.define("LLAMA_BUILD_TESTS", "OFF");
     config.define("LLAMA_BUILD_EXAMPLES", "OFF");
     config.define("LLAMA_BUILD_SERVER", "OFF");
+    config.define("LLAMA_CURL", "OFF");
 
     // Build tools (including the mtmd library) only when the mtmd feature is
     // requested.  Common is also required because the CMakeLists gate for
@@ -1151,6 +1152,7 @@ fn main() {
         config.define("LLAMA_BUILD_COMMON", "ON");
     } else {
         config.define("LLAMA_BUILD_TOOLS", "OFF");
+        config.define("LLAMA_BUILD_COMMON", "OFF");
     }
 
     config.define(
