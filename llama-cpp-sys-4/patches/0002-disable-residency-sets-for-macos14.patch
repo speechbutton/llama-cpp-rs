@@ -1,0 +1,32 @@
+diff --git a/ggml/src/ggml-metal/ggml-metal-device.m b/ggml/src/ggml-metal/ggml-metal-device.m
+index 17d51b11b..79b5ca151 100644
+--- a/ggml/src/ggml-metal/ggml-metal-device.m
++++ b/ggml/src/ggml-metal/ggml-metal-device.m
+@@ -13,12 +13,27 @@
+ #endif
+ 
+ // create residency sets only on macOS >= 15.0
++//
++// SpeechButton patch: disabled. `MTLResidencySetDescriptor` is a
++// macOS-15-only Objective-C class. When this macro is defined, the
++// compiler emits a HARD class reference into the dylib (the `@available`
++// runtime guard inside the call site does NOT make the symbol weakly
++// linked because the SDK headers don't carry the right availability
++// annotations). On macOS 14 dyld then refuses to load the dylib with
++//   "Symbol not found: _OBJC_CLASS_$_MTLResidencySetDescriptor"
++// and the entire app crashes BEFORE main(). Disabling the macro
++// excludes the residency-set code path from the binary entirely; we
++// lose a small Metal-alloc optimisation on macOS 15+ but the dylib
++// loads cleanly on every supported macOS version. Restore once we
++// either (a) ship per-OS builds or (b) add proper weak-linking.
++#if 0
+ #if !TARGET_CPU_X86_64 && TARGET_OS_OSX && __MAC_OS_X_VERSION_MAX_ALLOWED >= 150000 || \
+     TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED >= 180000 || \
+     TARGET_OS_TV && __TV_OS_VERSION_MAX_ALLOWED >= 180000 || \
+     TARGET_OS_VISION && __VISION_OS_VERSION_MAX_ALLOWED >= 200000
+ #define GGML_METAL_HAS_RESIDENCY_SETS 1
+ #endif
++#endif
+ 
+ // overload of MTLGPUFamilyMetalX (not available in some environments)
+ static const NSInteger MTLGPUFamilyMetal3_GGML = 5001;
